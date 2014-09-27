@@ -20,10 +20,20 @@ toList :: forall a.Observable (State [a]) a -> [a]
 toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit -> return unit)) []
               
 
-testObservable :: (Observable (State [Number]) Number -> Observable (State [Number]) Number) -> [Number] -> [Number]
+testObservable :: forall a.(Observable (State [a]) a -> Observable (State [a]) a) -> [a] -> [a]
 testObservable f =  toObservable >>> f >>> toList
                           
 main = do 
           trace "Applicative laws:"
           trace "Identity"
-          quickCheck $ \ns -> testObservable (\v -> pure id <*> v) ns == ns
+          quickCheck $ \ns -> let xs = ns :: [Number] in
+                              testObservable (\v -> pure id <*> v) xs == xs
+          trace "Composition"
+          quickCheck $ \ns -> let u = create (\o -> o |> onNext (\x -> x * x + 2 * x + 1)) :: Observable (State [Number]) (Number -> Number)
+                                  v = create (\o -> o |> onNext (\x -> x * x * x + 3 * x + 5)) :: Observable (State [Number]) (Number -> Number)
+                                  w = toObservable ns :: Observable (State [Number]) Number 
+                                  xs = (pure (<<<)) <*> u <*> v <*> w :: Observable (State [(Number)]) Number
+                                  ys = u <*> (v <*> w) :: Observable (State [(Number)]) (Number)
+                             in  toList xs == toList ys
+                             
+                             
