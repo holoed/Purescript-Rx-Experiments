@@ -13,6 +13,7 @@ import Test.QuickCheck
 -- In the case of the test suite, Main.main will use QuickCheck to test a collection
 -- of properties that we expect of the diffs function.
 
+
 main = [1,2,3,4,5]   |> toObservable
                      |> (<$>) (\x -> x * x)
                      |> filter (\x -> x < 85)
