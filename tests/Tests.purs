@@ -29,8 +29,8 @@ main = do
           quickCheck $ \ns -> let xs = ns :: [Number] in
                               testObservable (\v -> pure id <*> v) xs == xs
           trace "Composition"
-          quickCheck $ \ns -> let u = create (\o -> o |> onNext (\x -> x * x + 2 * x + 1)) :: Observable (State [Number]) (Number -> Number)
-                                  v = create (\o -> o |> onNext (\x -> x * x * x + 3 * x + 5)) :: Observable (State [Number]) (Number -> Number)
+          quickCheck $ \ns -> let u = toObservable [\x -> x * x, \x -> x + 5] :: Observable (State [Number]) (Number -> Number)
+                                  v = toObservable [\x -> x * x * x, \x -> x / 2, \x -> x ^ 2] :: Observable (State [Number]) (Number -> Number)
                                   w = toObservable ns :: Observable (State [Number]) Number 
                                   xs = (pure (<<<)) <*> u <*> v <*> w :: Observable (State [(Number)]) Number
                                   ys = u <*> (v <*> w) :: Observable (State [(Number)]) (Number)
