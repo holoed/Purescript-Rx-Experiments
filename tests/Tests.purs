@@ -23,9 +23,15 @@ toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit 
 testObservable :: forall a.(Observable (State [a]) a -> Observable (State [a]) a) -> [a] -> [a]
 testObservable f =  toObservable >>> f >>> toList
                           
-main = do 
+main = do trace "Functor laws:"
+
+          trace "First Law"
+          quickCheck $ \ns -> let xs = id (toObservable ns) :: Observable (State [Number]) Number
+                                  ys = id <$> (toObservable ns) :: Observable (State [Number]) Number
+                              in  toList xs == toList ys
+
           trace "Applicative laws:"
-          
+
           trace "Identity"
           quickCheck $ \ns -> let v = toObservable ns :: Observable (State [Number]) Number
                                   xs = pure id <*> v :: Observable (State [Number]) Number
