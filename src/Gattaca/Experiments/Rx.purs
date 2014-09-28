@@ -5,6 +5,9 @@ import Debug.Trace
 import Data.Foldable
 import Gattaca.Experiments.Utils
 
+import Control.Monad.State
+import Control.Monad.State.Class
+
 data Observer m a = Observer (a -> m Unit) 
                              (Unit -> m Unit)
 
@@ -38,6 +41,14 @@ filter :: forall m a.(Monad m) => (a -> Boolean) -> Observable m a -> Observable
 filter f os = create (\o -> os |> subscribe (\x -> if (f x) then (o |> onNext x) else return unit) 
                                             (\unit -> o |> onComplete))
 
+concat :: forall m a.(Monad m) => Observable m a -> Observable m a -> Observable m a
+concat xs ys = create (\o -> xs |> subscribe (\x -> o |> onNext x)
+                                             (\unit -> ys |> subscribe (\x -> o |> onNext x)
+                                                                       (\unit -> o |> onComplete)))
+
 toObservable :: forall m a. (Monad m) => [a] -> Observable m a
 toObservable xs = create (\o -> do sequence_ ((\x -> onNext x o) <$> xs)
                                    o |> onComplete)
+
+toList :: forall a.Observable (State [a]) a -> [a]
+toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit -> return unit)) []

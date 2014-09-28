@@ -1,6 +1,10 @@
 module Main where
 
 import Debug.Trace
+
+import Data.Foldable
+
+import Control.Monad
 import Control.Monad.State
 import Control.Monad.State.Class
 
@@ -16,13 +20,7 @@ import Test.QuickCheck
 -- In the case of the test suite, Main.main will use QuickCheck to test a collection
 -- of properties that we expect of the diffs function.
 
-toList :: forall a.Observable (State [a]) a -> [a]
-toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit -> return unit)) []
-              
-
-testObservable :: forall a.(Observable (State [a]) a -> Observable (State [a]) a) -> [a] -> [a]
-testObservable f =  toObservable >>> f >>> toList
-                          
+                                      
 main = do trace "Functor laws:"
 
           trace "First Law"
@@ -49,4 +47,13 @@ main = do trace "Functor laws:"
                                  xs = (pure f) <*> (pure x) :: Observable (State [Number]) Number
                                  ys = pure (f x) :: Observable (State [Number]) Number
                              in toList xs == toList ys
+
+          trace "Concat test"
+          quickCheck $ \ns vs -> let xs = toObservable ns :: Observable (State [Number]) Number
+                                     ys = toObservable vs :: Observable (State [Number]) Number
+                                 in toList (concat xs ys) == ns ++ vs
+
+          
+
+
                              
