@@ -25,9 +25,11 @@ testObservable f =  toObservable >>> f >>> toList
                           
 main = do 
           trace "Applicative laws:"
+          
           trace "Identity"
-          quickCheck $ \ns -> let xs = ns :: [Number] in
-                              testObservable (\v -> pure id <*> v) xs == xs
+          quickCheck $ \ns -> let v = toObservable ns :: Observable (State [Number]) Number
+                                  xs = pure id <*> v :: Observable (State [Number]) Number
+                              in toList v == toList xs
           trace "Composition"
           quickCheck $ \ns -> let u = toObservable [\x -> x * x, \x -> x + 5] :: Observable (State [Number]) (Number -> Number)
                                   v = toObservable [\x -> x * x * x, \x -> x / 2, \x -> x ^ 2] :: Observable (State [Number]) (Number -> Number)
@@ -35,5 +37,10 @@ main = do
                                   xs = (pure (<<<)) <*> u <*> v <*> w :: Observable (State [(Number)]) Number
                                   ys = u <*> (v <*> w) :: Observable (State [(Number)]) (Number)
                              in  toList xs == toList ys
-                             
+
+          trace "Homomorphism"
+          quickCheck $ \x -> let f x = x * x + 2 * x + 1
+                                 xs = (pure f) <*> (pure x) :: Observable (State [Number]) Number
+                                 ys = pure (f x) :: Observable (State [Number]) Number
+                             in toList xs == toList ys
                              
