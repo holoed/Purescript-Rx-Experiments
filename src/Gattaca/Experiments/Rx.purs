@@ -26,6 +26,18 @@ onCompleted (Observer _ c) = c unit
 subscribe :: forall m a.(Monad m) => (a -> m Unit) -> (Unit -> m Unit) -> Observable m a -> m Unit
 subscribe n c (Observable os) = os (Observer n c)
 
+filter :: forall m a.(Monad m) => (a -> Boolean) -> Observable m a -> Observable m a
+filter f os = create (\o -> os |> subscribe (\x -> if (f x) then (o |> onNext x) else return unit) 
+                                            (\unit -> o |> onCompleted))
+
+toObservable :: forall m a. (Monad m) => [a] -> Observable m a
+toObservable xs = create (\o -> do sequence_ ((\x -> onNext x o) <$> xs)
+                                   o |> onCompleted)
+
+toList :: forall a.Observable (State [a]) a -> [a]
+toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit -> return unit)) []
+
+
 instance functorObservable :: (Monad m) => Functor (Observable m) where
   (<$>) f os = create (\o -> os |> subscribe (\x -> o |> onNext (f x)) 
                                              (\unit -> o |> onCompleted))
@@ -38,27 +50,11 @@ instance applyObservable :: (Monad m) => Apply (Observable m) where
 instance applicativeObservable :: (Monad m) => Applicative (Observable m) where
    pure x = create (\o -> o |> onNext x) 
 
-filter :: forall m a.(Monad m) => (a -> Boolean) -> Observable m a -> Observable m a
-filter f os = create (\o -> os |> subscribe (\x -> if (f x) then (o |> onNext x) else return unit) 
-                                            (\unit -> o |> onCompleted))
-
-concat :: forall m a.(Monad m) => Observable m a -> Observable m a -> Observable m a
-concat xs ys = create (\o -> xs |> subscribe (\x -> o |> onNext x)
+instance semigroupObservable :: (Monad m) => Semigroup (Observable m a) where
+  (<>) xs ys = create (\o -> xs |> subscribe (\x -> o |> onNext x)
                                              (\unit -> ys |> subscribe (\x -> o |> onNext x)
                                                                        (\unit -> o |> onCompleted)))
 
-instance semigroupObservable :: (Monad m) => Semigroup (Observable m a) where
-    (<>) = concat
-
-empty :: forall m a.(Monad m) => Observable m a
-empty = create (\o -> o |> onCompleted)
-
 instance monoidObservable :: (Monad m) => Monoid (Observable m a) where
-    mempty = empty
+    mempty = create (\o -> o |> onCompleted)
 
-toObservable :: forall m a. (Monad m) => [a] -> Observable m a
-toObservable xs = create (\o -> do sequence_ ((\x -> onNext x o) <$> xs)
-                                   o |> onCompleted)
-
-toList :: forall a.Observable (State [a]) a -> [a]
-toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit -> return unit)) []
