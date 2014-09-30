@@ -5,6 +5,7 @@ import Debug.Trace
 import Data.Foldable
 import Gattaca.Experiments.Utils
 
+import Data.Monoid
 import Control.Monad.State
 import Control.Monad.State.Class
 
@@ -19,36 +20,45 @@ create = Observable
 onNext :: forall m a.(Monad m) => a -> Observer m a -> m Unit
 onNext x (Observer o _) = o x
 
-onComplete :: forall m a.(Monad m) => Observer m a -> m Unit
-onComplete (Observer _ c) = c unit 
+onCompleted :: forall m a.(Monad m) => Observer m a -> m Unit
+onCompleted (Observer _ c) = c unit 
 
 subscribe :: forall m a.(Monad m) => (a -> m Unit) -> (Unit -> m Unit) -> Observable m a -> m Unit
 subscribe n c (Observable os) = os (Observer n c)
 
 instance functorObservable :: (Monad m) => Functor (Observable m) where
   (<$>) f os = create (\o -> os |> subscribe (\x -> o |> onNext (f x)) 
-                                             (\unit -> o |> onComplete))
+                                             (\unit -> o |> onCompleted))
 
-instance functorApply :: (Monad m) => Apply (Observable m) where
+instance applyObservable :: (Monad m) => Apply (Observable m) where
   (<*>) fs xs = create (\o -> fs |> subscribe (\f -> xs |> subscribe (\x -> o |> onNext (f x)) 
-                                                                     (\unit -> o |> onComplete)) 
-                                              (\unit -> o |> onComplete))
+                                                                     (\unit -> o |> onCompleted)) 
+                                              (\unit -> o |> onCompleted))
 
-instance functorApplicative :: (Monad m) => Applicative (Observable m) where
+instance applicativeObservable :: (Monad m) => Applicative (Observable m) where
    pure x = create (\o -> o |> onNext x) 
 
 filter :: forall m a.(Monad m) => (a -> Boolean) -> Observable m a -> Observable m a
 filter f os = create (\o -> os |> subscribe (\x -> if (f x) then (o |> onNext x) else return unit) 
-                                            (\unit -> o |> onComplete))
+                                            (\unit -> o |> onCompleted))
 
 concat :: forall m a.(Monad m) => Observable m a -> Observable m a -> Observable m a
 concat xs ys = create (\o -> xs |> subscribe (\x -> o |> onNext x)
                                              (\unit -> ys |> subscribe (\x -> o |> onNext x)
-                                                                       (\unit -> o |> onComplete)))
+                                                                       (\unit -> o |> onCompleted)))
+
+instance semigroupObservable :: (Monad m) => Semigroup (Observable m a) where
+    (<>) = concat
+
+empty :: forall m a.(Monad m) => Observable m a
+empty = create (\o -> o |> onCompleted)
+
+instance monoidObservable :: (Monad m) => Monoid (Observable m a) where
+    mempty = empty
 
 toObservable :: forall m a. (Monad m) => [a] -> Observable m a
 toObservable xs = create (\o -> do sequence_ ((\x -> onNext x o) <$> xs)
-                                   o |> onComplete)
+                                   o |> onCompleted)
 
 toList :: forall a.Observable (State [a]) a -> [a]
 toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit -> return unit)) []

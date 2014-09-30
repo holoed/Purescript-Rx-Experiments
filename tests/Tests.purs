@@ -4,6 +4,7 @@ import Debug.Trace
 
 import Data.Foldable
 
+import Data.Monoid
 import Control.Monad
 import Control.Monad.State
 import Control.Monad.State.Class
@@ -51,7 +52,18 @@ main = do trace "Functor laws:"
           trace "Concat test"
           quickCheck $ \ns vs -> let xs = toObservable ns :: Observable (State [Number]) Number
                                      ys = toObservable vs :: Observable (State [Number]) Number
-                                 in toList (concat xs ys) == ns ++ vs
+                                 in toList (xs <> ys) == ns <> vs
+
+          trace "Semigroup test"
+          quickCheck $ \ns vs ws -> let xs = toObservable ns :: Observable (State [Number]) Number
+                                        ys = toObservable vs :: Observable (State [Number]) Number
+                                        zs = toObservable ws :: Observable (State [Number]) Number
+                                 in toList ((xs <> ys) <> zs) == toList (xs <> (ys <> zs))
+
+          trace "Monoid test"
+          quickCheck $ \ns -> let xs = toObservable ns :: Observable (State [Number]) Number
+                              in toList (xs <> mempty) == toList (mempty <> xs)
+
 
           
 
