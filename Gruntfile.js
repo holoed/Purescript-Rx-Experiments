@@ -3,6 +3,18 @@ module.exports = function(grunt) {
   "use strict";
 
   grunt.initConfig({ 
+
+    psc: {
+      options: {
+        main: "Gattaca.Experiments.Main",
+        modules: ["Gattaca.Experiments.Main"]
+      },
+      all: {
+        src: [ "src/**/*.purs"
+             , "bower_components/**/src/**/*.purs"],
+        dest: "dist/example.js"
+      }
+    },
   
     libFiles: [
       "src/**/*.purs",
@@ -48,5 +60,6 @@ module.exports = function(grunt) {
  
   grunt.registerTask("test", ["pscMake:tests", "copy", "execute:tests"]);
   grunt.registerTask("make", ["pscMake:lib", "dotPsci"]);
-  grunt.registerTask("default", ["clean", "make", "test"]);
+  grunt.registerTask("deploy", ["psc:all"]);
+  grunt.registerTask("default", ["clean", "make", "test", "deploy"]);
 };

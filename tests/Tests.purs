@@ -12,6 +12,7 @@ import Control.Monad.State.Class
 
 -- Import the library's module(s)
 import Gattaca.Experiments.Rx
+import Gattaca.Experiments.RxDom
 import Gattaca.Experiments.Utils
 
 -- Import Test.QuickCheck, which supports property-based testing
@@ -70,6 +71,8 @@ main = do trace "Functor laws:"
           trace "Join test"
           quickCheck $ \nss -> let xss = toObservable (Data.Array.map toObservable nss) ::  Observable (State [Number]) (Observable (State [Number]) Number)
                                in  toList (join xss) == Data.Array.concat nss
+
+          subscribe (\x -> trace (show x)) (\unit -> trace "complete") (mouse_move unit)
 
 
           
