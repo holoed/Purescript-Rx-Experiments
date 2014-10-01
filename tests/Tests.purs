@@ -3,6 +3,7 @@ module Main where
 import Debug.Trace
 
 import Data.Foldable
+import Data.Array (map, concat)
 
 import Data.Monoid
 import Control.Monad
@@ -54,6 +55,8 @@ main = do trace "Functor laws:"
                                      ys = toObservable vs :: Observable (State [Number]) Number
                                  in toList (xs <> ys) == ns <> vs
 
+          trace "Semigroup and Monoid tests"
+
           trace "Semigroup test"
           quickCheck $ \ns vs ws -> let xs = toObservable ns :: Observable (State [Number]) Number
                                         ys = toObservable vs :: Observable (State [Number]) Number
@@ -63,6 +66,10 @@ main = do trace "Functor laws:"
           trace "Monoid test"
           quickCheck $ \ns -> let xs = toObservable ns :: Observable (State [Number]) Number
                               in toList (xs <> mempty) == toList (mempty <> xs)
+
+          trace "Join test"
+          quickCheck $ \nss -> let xss = toObservable (Data.Array.map toObservable nss) ::  Observable (State [Number]) (Observable (State [Number]) Number)
+                               in  toList (join xss) == Data.Array.concat nss
 
 
           

@@ -37,6 +37,12 @@ toObservable xs = create (\o -> do sequence_ ((\x -> onNext x o) <$> xs)
 toList :: forall a.Observable (State [a]) a -> [a]
 toList os = execState (os |> subscribe (\x -> modify (\xs -> xs ++ [x])) (\unit -> return unit)) []
 
+join :: forall m a.(Monad m) => Observable m (Observable m a) -> Observable m a
+join xss = create (\o -> xss |> subscribe (\xs -> xs |> subscribe(\x -> o |> onNext x) (\unit -> return unit)) (\unit -> o |> onCompleted)) 
+
+bind :: forall m a b.(Monad m) => Observable m a -> (a -> Observable m b) -> Observable m b
+bind  xs f = join (f <$> xs) 
+
 
 instance functorObservable :: (Monad m) => Functor (Observable m) where
   (<$>) f os = create (\o -> os |> subscribe (\x -> o |> onNext (f x)) 
@@ -49,6 +55,11 @@ instance applyObservable :: (Monad m) => Apply (Observable m) where
 
 instance applicativeObservable :: (Monad m) => Applicative (Observable m) where
    pure x = create (\o -> o |> onNext x) 
+
+instance bindObservable :: (Monad m) => Bind (Observable m) where
+   (>>=) = bind
+
+instance monadObservable :: (Monad m) => Monad (Observable m)
 
 instance semigroupObservable :: (Monad m) => Semigroup (Observable m a) where
   (<>) xs ys = create (\o -> xs |> subscribe (\x -> o |> onNext x)
