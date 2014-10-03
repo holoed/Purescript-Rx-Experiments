@@ -72,7 +72,7 @@ main = do trace "Functor laws:"
           quickCheck $ \nss -> let xss = toObservable (Data.Array.map toObservable nss) ::  Observable (State [Number]) (Observable (State [Number]) Number)
                                in  toList (join xss) == Data.Array.concat nss
 
-          subscribe (\x -> trace (show x)) (\unit -> trace "complete") (mouse_move unit)
+          --subscribe (\x -> trace (show x)) (\unit -> trace "complete") (mouse_move unit)
 
 
           
