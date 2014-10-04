@@ -10,5 +10,6 @@ install:
   - "npm install bower grunt-cli -g"
   - "npm install"
   - "bower install"
+  - "bower update"
 script:
   - "grunt"  
