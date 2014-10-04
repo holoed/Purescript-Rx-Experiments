@@ -94,8 +94,8 @@ PS.Prelude = (function () {
     var $less = function (__dict_Ord_10) {
         return function (a1) {
             return function (a2) {
-                var _340 = compare(__dict_Ord_10)(a1)(a2);
-                if (_340 instanceof LT) {
+                var _341 = compare(__dict_Ord_10)(a1)(a2);
+                if (_341 instanceof LT) {
                     return true;
                 };
                 return false;
@@ -282,7 +282,7 @@ var PS = PS || {};
 PS.Gattaca_Experiments_RxDom = (function () {
     "use strict";
     var Prelude = PS.Prelude;
-    function mouse_move(unit) {                                                 function Observable(value0) {                                              this.value0 = value0;                                                    };                                                                        return new Observable(                                                        function (o) {                                                              return function() {                                                                                                                                    window.onload = function() {                                                                                                                          var mouse_monitor = function(e) {                                             var x = e.pageX;                                                          var y = e.pageY;                                                          o.value0(x)();                                                         };                                                                                                                                                   document.addEventListener('mousemove', mouse_monitor);                 };                                                                                                                                                                                                                         }                                                                       });                                                                                                                                                                                                                    };
+    function mouse_move(unit) {                                                 return new PS.Gattaca_Experiments_Rx.Observable(                              function (o) {                                                              return function() {                                                                                                                                    window.onload = function() {                                                                                                                          var mouse_monitor = function(e) {                                             var x = e.pageX;                                                          var y = e.pageY;                                                          var t = { value0 : x, value1 : y };                                       o.value0(t)();                                                         };                                                                                                                                                   document.addEventListener('mousemove', mouse_monitor);                 };                                                                                                                                                                                                                         }                                                                       });                                                                                                                                                                                                                    };
     return {
         mouse_move: mouse_move
     };
@@ -295,9 +295,12 @@ PS.Gattaca_Experiments_Main = (function () {
     var Gattaca_Experiments_RxDom = PS.Gattaca_Experiments_RxDom;
     var Gattaca_Experiments_Rx = PS.Gattaca_Experiments_Rx;
     var Control_Monad_Eff = PS.Control_Monad_Eff;
+    var Data_Tuple = PS.Data_Tuple;
     var Debug_Trace = PS.Debug_Trace;
-    var main = Gattaca_Experiments_Utils["|>"](Gattaca_Experiments_Utils["|>"](Gattaca_Experiments_Utils["|>"](Gattaca_Experiments_RxDom.mouse_move(Prelude.unit))(Gattaca_Experiments_Rx.filter(Control_Monad_Eff.monadEff({}))(function (x) {
-        return x < 100;
+    var main = Gattaca_Experiments_Utils["|>"](Gattaca_Experiments_Utils["|>"](Gattaca_Experiments_Utils["|>"](Gattaca_Experiments_Utils["|>"](Gattaca_Experiments_RxDom.mouse_move(Prelude.unit))(Prelude["<$>"](Gattaca_Experiments_Rx.functorObservable(Control_Monad_Eff.monadEff({})))(function (_289) {
+        return _289.value0;
+    })))(Gattaca_Experiments_Rx.filter(Control_Monad_Eff.monadEff({}))(function (x) {
+        return x < 200;
     })))(Prelude["<$>"](Gattaca_Experiments_Rx.functorObservable(Control_Monad_Eff.monadEff({})))(Prelude.show(Prelude.showNumber({})))))(Gattaca_Experiments_Rx.subscribe(Control_Monad_Eff.monadEff({}))(function (x) {
         return Debug_Trace.trace(x);
     })(function (unit) {
