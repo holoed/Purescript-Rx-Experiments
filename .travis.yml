@@ -6,7 +6,7 @@ install:
   - "cabal update"
   - "cabal install Cabal cabal-install"
   - "export PATH=~/.cabal/bin:$PATH"
-  - "cabal install purescript --force-reinstalls"
+  - "cabal install purescript-0.5.4.1 --force-reinstalls"
   - "npm install bower grunt-cli -g"
   - "npm install"
   - "bower install"
