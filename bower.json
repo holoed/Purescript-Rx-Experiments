@@ -17,7 +17,9 @@
   "dependencies": {
     "purescript-arrays"               : "*",
     "purescript-maybe"                : "*",
-    "purescript-foldable-traversable" : "*"
+    "purescript-foldable-traversable" : "*",
+    "purescript-transformers" : "*",
+    "purescript-monoid" : "*"
   },
   "devDependencies": {
     "purescript-math"                 : "*",

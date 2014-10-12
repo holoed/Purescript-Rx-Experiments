@@ -43,6 +43,11 @@ join xss = create (\o -> xss |> subscribe (\xs -> xs |> subscribe(\x -> o |> onN
 bind :: forall m a b.(Monad m) => Observable m a -> (a -> Observable m b) -> Observable m b
 bind  xs f = join (f <$> xs) 
 
+--takeUntil :: forall m a.(Monad m) => Observable m a -> Observable m b -> Observable m a
+--takeUntil xs ys = create (\o -> let yso = Observer (\x -> o |>)
+--                                    xs |> subscribe (\x -> o |> onNext x) (\unit -> o |> onCompleted)
+--                                    ys |> subscribe (\_ -> ) (\unit -> o |> onCompleted))
+
 
 instance functorObservable :: (Monad m) => Functor (Observable m) where
   (<$>) f os = create (\o -> os |> subscribe (\x -> o |> onNext (f x)) 

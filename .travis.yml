@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "0.10"
+install:
+  - "sudo apt-get install cabal-install"
+  - "cabal update"
+  - "cabal install Cabal cabal-install"
+  - "export PATH=~/.cabal/bin:$PATH"
+  - "cabal install purescript-0.5.4.1 --force-reinstalls"
+  - "npm install bower grunt-cli -g"
+  - "npm install"
+  - "bower install"
+  - "bower update"
+script:
+  - "grunt"  

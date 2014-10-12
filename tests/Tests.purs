@@ -72,7 +72,21 @@ main = do trace "Functor laws:"
           quickCheck $ \nss -> let xss = toObservable (Data.Array.map toObservable nss) ::  Observable (State [Number]) (Observable (State [Number]) Number)
                                in  toList (join xss) == Data.Array.concat nss
 
-          subscribe (\x -> trace (show x)) (\unit -> trace "complete") (mouse_move unit)
+          trace "Monad test"
+
+          trace "Left Identity"
+          quickCheck $ \n ->  let f x = pure (x * x + 2 * x + 5) :: Observable (State [Number]) Number
+                              in toList (return n >>= f) == toList (f n) 
+
+          trace "Right Identity"
+          quickCheck $ \ns -> let xs = toObservable ns :: Observable (State [Number]) Number
+                              in toList (xs >>= return) == toList xs
+
+          trace "Associativity"
+          quickCheck $ \ns -> let f x = pure (x * x + 2 * x + 5)
+                                  g x = pure (x * x * x + 5 * x * x + 3 * x + 6)
+                                  xs = toObservable ns :: Observable (State [Number]) Number
+                              in  toList ((xs >>= f) >>= g) == toList (xs >>= (\x -> f x >>= g))
 
 
           
